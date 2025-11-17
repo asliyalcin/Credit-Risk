@@ -1,0 +1,14 @@
+{
+    "model_name": "rf_baseline",
+    "best_threshold": 0.5062409047928702,
+    "score": 0.5201969268438065,
+    "metrics": {
+        "tn": 2246,
+        "fp": 1999,
+        "fn": 64,
+        "tp": 67,
+        "sensitivity": 0.5114503816793893,
+        "specificity": 0.529093050647821,
+        "g_mean": 0.5201969268438065
+    }
+}

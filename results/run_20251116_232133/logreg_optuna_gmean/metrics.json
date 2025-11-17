@@ -1,0 +1,14 @@
+{
+    "model_name": "logreg_optuna_gmean",
+    "best_threshold": 0.6604315210040449,
+    "score": 0.5317983993785068,
+    "metrics": {
+        "tn": 1498,
+        "fp": 1331,
+        "fn": 41,
+        "tp": 47,
+        "sensitivity": 0.5340909090909091,
+        "specificity": 0.5295157299399081,
+        "g_mean": 0.5317983993785068
+    }
+}

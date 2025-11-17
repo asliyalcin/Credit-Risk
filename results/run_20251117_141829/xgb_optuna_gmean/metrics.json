@@ -1,0 +1,14 @@
+{
+    "model_name": "xgb_optuna_gmean",
+    "best_threshold": 0.9850870370864868,
+    "score": 0.5325645085947575,
+    "metrics": {
+        "tn": 1441,
+        "fp": 1388,
+        "fn": 39,
+        "tp": 49,
+        "sensitivity": 0.5568181818181818,
+        "specificity": 0.5093672675857194,
+        "g_mean": 0.5325645085947575
+    }
+}

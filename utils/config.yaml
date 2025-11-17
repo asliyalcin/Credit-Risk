@@ -1,0 +1,51 @@
+leakage:
+  leak_cols:
+    - total_pymnt
+    - total_pymnt_inv
+    - last_pymnt_amnt
+    - id
+    - member_id
+settings:
+  style: "seaborn-v0_8"
+  context: "notebook"
+
+pandas:
+  max_rows: 60
+  max_columns: 100
+
+paths_eda:
+  plot_dir: "eda_plots"
+  read_file: "data/credit_risk.xlsx"
+  write_eda: "data/credit_risk_processed.csv"
+  data_engine: "openpyxl"
+
+paths_model:
+  read_file: "data/credit_risk_processed.csv"
+
+
+
+mappings:
+  emp_length:
+    "< 1 year": 0
+    "1 year": 1
+    "2 years": 2
+    "3 years": 3
+    "4 years": 4
+    "5 years": 5
+    "6 years": 6
+    "7 years": 7
+    "8 years": 8
+    "9 years": 9
+    "10+ years": 10
+
+
+eda:
+  hist_cols:
+    - loan_amnt
+    - annual_inc
+    - installment
+    - open_acc
+    - total_acc
+    - delinq_2yrs
+    - total_rev_hi_lim
+    - tot_cur_bal

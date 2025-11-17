@@ -1,0 +1,48 @@
+# === Core Python ===
+numpy
+pandas
+scikit-learn
+scipy
+
+# === Machine Learning & Modelling ===
+xgboost
+lightgbm
+catboost
+imbalanced-learn
+
+# === Hyperparameter Optimization ===
+optuna
+
+# === Deep Learning  Transformers ===
+torch
+transformers
+sentence-transformers
+
+# === NLP ===
+nltk
+regex
+
+# === Visualization ===
+matplotlib
+seaborn
+plotly
+
+# === Jupyter Support ===
+jupyter
+ipykernel
+notebook
+
+# === Utilities ===
+tqdm
+joblib
+pyyaml
+python-dotenv
+
+# === Similarity  Vector Search ===
+faiss-cpu
+
+# === File Operations ===
+openpyxl
+
+# === Logging ===
+loguru
