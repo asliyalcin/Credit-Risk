@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.metrics import roc_curve, confusion_matrix
 from xgboost import XGBClassifier
 from sklearn.linear_model import LogisticRegression
-
+import pandas as pd
 
 def evaluate_with_gmean(y_true, y_proba, print_results=True):
     """
@@ -114,6 +114,7 @@ def eval_func(y_true, y_pred):
 
 
 def objective_xgb(trial, scale_pos_weight, X_train_xbg, X_valid_xgb, y_train_xgb, y_valid_xgb, X):
+    # ---- 1) Hiperparametreler ----
     params = {
         'n_estimators': trial.suggest_int('n_estimators', 100, 500),
         'max_depth': trial.suggest_int('max_depth', 3, 8),
@@ -126,29 +127,53 @@ def objective_xgb(trial, scale_pos_weight, X_train_xbg, X_valid_xgb, y_train_xgb
         'reg_lambda': trial.suggest_float('reg_lambda', 0, 10),
         'scale_pos_weight': trial.suggest_float('scale_pos_weight', scale_pos_weight*0.5, scale_pos_weight*1.5),
         'eval_metric': 'logloss',
-        'random_state': 42
+        'random_state': 42,
+        'n_jobs': -1,
+        'tree_method': 'hist',  # varsa GPU kullanıyorsan güncelleyebilirsin
     }
 
-    # Feature selection
-    mask = [trial.suggest_categorical(f"feature_{i}", [0, 1]) for i in range(X_train_xbg.shape[1])]
-    selected_features = [col for col, m in zip(X.columns, mask) if m == 1]
+    # ---- 2) Güvenli: X_train / X_valid'i DataFrame'e çevir ----
+    feature_names = list(X.columns)
 
+    # X_train_xbg NumPy ise DataFrame'e sar
+    if isinstance(X_train_xbg, np.ndarray):
+        X_train_df = pd.DataFrame(X_train_xbg, columns=feature_names)
+    else:
+        # Zaten DataFrame ise, kolonları X ile hizala
+        X_train_df = X_train_xbg[feature_names]
+
+    if isinstance(X_valid_xgb, np.ndarray):
+        X_valid_df = pd.DataFrame(X_valid_xgb, columns=feature_names)
+    else:
+        X_valid_df = X_valid_xgb[feature_names]
+
+    # ---- 3) Feature selection (Optuna mask) ----
+    n_features = len(feature_names)
+    mask = [trial.suggest_categorical(f"feature_{i}", [0, 1]) for i in range(n_features)]
+    selected_features = [col for col, m in zip(feature_names, mask) if m == 1]
+
+    # Hiç feature seçilmezse: bu trial'ı çok kötü say → g_mean = 0
     if len(selected_features) == 0:
-        return 1e6
+        trial.set_user_attr("selected_features", [])
+        return 0.0
 
-    X_train_sel = X_train_xbg[selected_features]
-    X_valid_xgb_sel = X_valid_xgb[selected_features]
+    X_train_sel = X_train_df[selected_features]
+    X_valid_sel = X_valid_df[selected_features]
 
+    # ---- 4) Model eğitimi ----
     model = XGBClassifier(**params)
-    model.fit(X_train_sel, y_train_xgb,
-              eval_set=[(X_valid_xgb_sel, y_valid_xgb)],
-              verbose=False)
+    model.fit(
+        X_train_sel, y_train_xgb,
+        eval_set=[(X_valid_sel, y_valid_xgb)],
+        verbose=False
+    )
 
-    y_pred = model.predict(X_valid_xgb_sel)
-    
+    # ---- 5) Tahmin & G-Mean ----
+    y_pred = model.predict(X_valid_sel)
+
     tn, fp, fn, tp = confusion_matrix(y_valid_xgb, y_pred).ravel()
-    sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+    sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0.0  # recall (pozitif sınıf)
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0  # true negative rate
     g_mean = np.sqrt(sensitivity * specificity)
 
     trial.set_user_attr("selected_features", selected_features)
